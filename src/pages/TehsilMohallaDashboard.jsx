@@ -2634,6 +2634,160 @@ const DistrictVillageDashboardNew = () => {
         };
 
         // Improved fetchPropertyData function for concurrent requests
+        // const fetchPropertyData = async (village = selectedVillage, tehsil = selectedTehsil, district = selectedDistrict, isBatchProcessing = false) => {
+        //         if (!district || !tehsil || !village) {
+        //                 return false;
+        //         }
+
+        //         if (!isBatchProcessing) {
+        //                 setFetchStatus('loading');
+        //         }
+
+        //         // Create timestamp and unique request ID
+        //         const timestamp = new Date().toLocaleTimeString();
+        //         const requestId = `req-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+
+        //         // Add this request to active requests
+        //         activeRequestsRef.current.add(requestId);
+
+        //         try {
+        //                 // API call to fetch property data
+        //                 const requestBody = {
+        //                         districtCode: district.code,
+        //                         sroCode: tehsil.sroCode,
+        //                         gaonCode1: village.value,
+        //                         propertyId: '',
+        //                         propNEWAddress: '1'
+        //                 };
+
+        //                 // Add to request history
+        //                 const historyItem = {
+        //                         timestamp,
+        //                         requestId,
+        //                         district: district,
+        //                         tehsil: tehsil,
+        //                         village: village,
+        //                         status: 'pending',
+        //                         message: `Fetching data for ${getDisplayName(village)} (${village.value})`
+        //                 };
+
+        //                 setRequestHistory(prev => [historyItem, ...prev]);
+
+        //                 // Add API call to log
+        //                 addLogEntry({
+        //                         type: 'api',
+        //                         action: 'api_request',
+        //                         requestId,
+        //                         district: district,
+        //                         tehsil: tehsil,
+        //                         village: village,
+        //                         status: 'pending',
+        //                         message: `API Request: districtCode=${district.code}, sroCode=${tehsil.sroCode}, gaonCode1=${village.value}`,
+        //                         requestBody
+        //                 });
+
+        //                 // Check if processing was cancelled before making the request
+        //                 if (cancelProcessingRef.current) {
+        //                         throw new Error('Processing cancelled by user');
+        //                 }
+
+        //                 // Make the actual API call to fetch property data
+        //                 const response = await fetch(`${base_url}/api/property-data`, {
+        //                         method: 'POST',
+        //                         headers: {
+        //                                 'Content-Type': 'application/json'
+        //                         },
+        //                         body: JSON.stringify(requestBody)
+        //                 });
+
+        //                 if (!response.ok) {
+        //                         throw new Error(`Failed to fetch property data: ${response.status} ${response.statusText}`);
+        //                 }
+
+        //                 const responseData = await response.json();
+
+        //                 // Update history item status to success using the requestId
+        //                 setRequestHistory(prev =>
+        //                         prev.map(item =>
+        //                                 item.requestId === requestId
+        //                                         ? {
+        //                                                 ...item,
+        //                                                 status: 'success',
+        //                                                 message: `Successfully fetched data for ${getDisplayName(village)} (${village.value})`
+        //                                         }
+        //                                         : item
+        //                         )
+        //                 );
+
+        //                 // Add API response to log
+        //                 addLogEntry({
+        //                         type: 'api',
+        //                         action: 'api_response',
+        //                         requestId,
+        //                         district: district,
+        //                         tehsil: tehsil,
+        //                         village: village,
+        //                         status: 'success',
+        //                         message: `API Response: Success for ${getDisplayName(village)} (${village.value})`,
+        //                         responseStatus: response.status
+        //                 });
+
+        //                 if (!isBatchProcessing) {
+        //                         setFetchStatus('success');
+        //                         // Show success message for 2 seconds then reset
+        //                         setTimeout(() => {
+        //                                 setFetchStatus(null);
+        //                         }, 2000);
+        //                 }
+
+        //                 // Remove from active requests
+        //                 activeRequestsRef.current.delete(requestId);
+
+        //                 return true;
+        //         } catch (error) {
+        //                 console.error('Error fetching property data:', error);
+
+        //                 // Update history item status to error
+        //                 setRequestHistory(prev =>
+        //                         prev.map(item =>
+        //                                 item.requestId === requestId
+        //                                         ? {
+        //                                                 ...item,
+        //                                                 status: 'error',
+        //                                                 message: `Error fetching data for ${getDisplayName(village)} (${village.value}): ${error.message}`
+        //                                         }
+        //                                         : item
+        //                         )
+        //                 );
+
+        //                 // Add API error to log
+        //                 addLogEntry({
+        //                         type: 'api',
+        //                         action: 'api_error',
+        //                         requestId,
+        //                         district: district,
+        //                         tehsil: tehsil,
+        //                         village: village,
+        //                         status: 'error',
+        //                         message: `API Error: ${error.message} for ${getDisplayName(village)} (${village.value})`,
+        //                         error: error.message
+        //                 });
+
+        //                 if (!isBatchProcessing) {
+        //                         setFetchStatus('error');
+        //                         // Show error message for 2 seconds then reset
+        //                         setTimeout(() => {
+        //                                 setFetchStatus(null);
+        //                         }, 2000);
+        //                 }
+
+        //                 // Remove from active requests
+        //                 activeRequestsRef.current.delete(requestId);
+
+        //                 return false;
+        //         }
+        // };
+
         const fetchPropertyData = async (village = selectedVillage, tehsil = selectedTehsil, district = selectedDistrict, isBatchProcessing = false) => {
                 if (!district || !tehsil || !village) {
                         return false;
@@ -2643,146 +2797,233 @@ const DistrictVillageDashboardNew = () => {
                         setFetchStatus('loading');
                 }
 
-                // Create timestamp and unique request ID
+                // Create timestamp and unique request ID for the entire operation
                 const timestamp = new Date().toLocaleTimeString();
-                const requestId = `req-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+                const mainRequestId = `req-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
                 // Add this request to active requests
-                activeRequestsRef.current.add(requestId);
+                activeRequestsRef.current.add(mainRequestId);
 
                 try {
-                        // API call to fetch property data
-                        const requestBody = {
-                                districtCode: district.code,
-                                sroCode: tehsil.sroCode,
-                                gaonCode1: village.value,
-                                propertyId: '',
-                                propNEWAddress: '1'
-                        };
+                        let totalSuccessfulCalls = 0;
+                        let totalFailedCalls = 0;
+                        const allResults = [];
 
-                        // Add to request history
-                        const historyItem = {
+                        // Add main history item
+                        const mainHistoryItem = {
                                 timestamp,
-                                requestId,
+                                requestId: mainRequestId,
                                 district: district,
                                 tehsil: tehsil,
                                 village: village,
                                 status: 'pending',
-                                message: `Fetching data for ${getDisplayName(village)} (${village.value})`
+                                message: `Starting batch fetch for ${getDisplayName(village)} (${village.value}) - propNEWAddress 0-9`
                         };
 
-                        setRequestHistory(prev => [historyItem, ...prev]);
+                        setRequestHistory(prev => [mainHistoryItem, ...prev]);
 
-                        // Add API call to log
+                        // Add main log entry
                         addLogEntry({
                                 type: 'api',
-                                action: 'api_request',
-                                requestId,
+                                action: 'batch_api_start',
+                                requestId: mainRequestId,
                                 district: district,
                                 tehsil: tehsil,
                                 village: village,
                                 status: 'pending',
-                                message: `API Request: districtCode=${district.code}, sroCode=${tehsil.sroCode}, gaonCode1=${village.value}`,
-                                requestBody
+                                message: `Starting batch API calls for propNEWAddress values 0-9`,
                         });
 
-                        // Check if processing was cancelled before making the request
-                        if (cancelProcessingRef.current) {
-                                throw new Error('Processing cancelled by user');
+                        // Loop through propNEWAddress values from 0 to 9
+                        for (let propValue = 0; propValue <= 9; propValue++) {
+                                // Check if processing was cancelled
+                                if (cancelProcessingRef.current) {
+                                        throw new Error('Processing cancelled by user');
+                                }
+
+                                const subRequestId = `${mainRequestId}-prop${propValue}`;
+
+                                try {
+                                        // API call to fetch property data for current propNEWAddress value
+                                        const requestBody = {
+                                                districtCode: district.code,
+                                                sroCode: tehsil.sroCode,
+                                                gaonCode1: village.value,
+                                                propertyId: '',
+                                                propNEWAddress: propValue.toString()
+                                        };
+
+                                        // Add individual request log
+                                        addLogEntry({
+                                                type: 'api',
+                                                action: 'api_request',
+                                                requestId: subRequestId,
+                                                district: district,
+                                                tehsil: tehsil,
+                                                village: village,
+                                                status: 'pending',
+                                                message: `API Request: propNEWAddress=${propValue} for ${getDisplayName(village)} (${village.value})`,
+                                                requestBody
+                                        });
+
+                                        // Make the actual API call
+                                        const response = await fetch(`${base_url}/api/property-data`, {
+                                                method: 'POST',
+                                                headers: {
+                                                        'Content-Type': 'application/json'
+                                                },
+                                                body: JSON.stringify(requestBody)
+                                        });
+
+                                        if (!response.ok) {
+                                                throw new Error(`Failed to fetch property data: ${response.status} ${response.statusText}`);
+                                        }
+
+                                        const responseData = await response.json();
+
+                                        // Store the result with propNEWAddress info
+                                        allResults.push({
+                                                propNEWAddress: propValue,
+                                                success: true,
+                                                data: responseData,
+                                                requestId: subRequestId
+                                        });
+
+                                        totalSuccessfulCalls++;
+
+                                        // Add success log for individual request
+                                        addLogEntry({
+                                                type: 'api',
+                                                action: 'api_response',
+                                                requestId: subRequestId,
+                                                district: district,
+                                                tehsil: tehsil,
+                                                village: village,
+                                                status: 'success',
+                                                message: `API Response: Success for propNEWAddress=${propValue}, Records: ${responseData.totalRecords || 0}`,
+                                                responseStatus: response.status,
+                                                totalRecords: responseData.totalRecords || 0,
+                                                skippedRecords: responseData.skippedRecords || 0
+                                        });
+
+                                        // Optional: Add a small delay between requests to avoid overwhelming the server
+                                        if (propValue < 9) {
+                                                await new Promise(resolve => setTimeout(resolve, 100)); // 100ms delay
+                                        }
+
+                                } catch (error) {
+                                        console.error(`Error fetching property data for propNEWAddress ${propValue}:`, error);
+
+                                        // Store the failed result
+                                        allResults.push({
+                                                propNEWAddress: propValue,
+                                                success: false,
+                                                error: error.message,
+                                                requestId: subRequestId
+                                        });
+
+                                        totalFailedCalls++;
+
+                                        // Add error log for individual request
+                                        addLogEntry({
+                                                type: 'api',
+                                                action: 'api_error',
+                                                requestId: subRequestId,
+                                                district: district,
+                                                tehsil: tehsil,
+                                                village: village,
+                                                status: 'error',
+                                                message: `API Error: propNEWAddress=${propValue} - ${error.message}`,
+                                                error: error.message
+                                        });
+                                }
                         }
 
-                        // Make the actual API call to fetch property data
-                        const response = await fetch(`${base_url}/api/property-data`, {
-                                method: 'POST',
-                                headers: {
-                                        'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify(requestBody)
-                        });
-
-                        if (!response.ok) {
-                                throw new Error(`Failed to fetch property data: ${response.status} ${response.statusText}`);
-                        }
-
-                        const responseData = await response.json();
-
-                        // Update history item status to success using the requestId
+                        // Update main history item with final results
                         setRequestHistory(prev =>
                                 prev.map(item =>
-                                        item.requestId === requestId
+                                        item.requestId === mainRequestId
                                                 ? {
                                                         ...item,
-                                                        status: 'success',
-                                                        message: `Successfully fetched data for ${getDisplayName(village)} (${village.value})`
+                                                        status: totalFailedCalls === 10 ? 'error' : 'success',
+                                                        message: `Completed batch fetch for ${getDisplayName(village)} (${village.value}) - Success: ${totalSuccessfulCalls}/10, Failed: ${totalFailedCalls}/10`
                                                 }
                                                 : item
                                 )
                         );
 
-                        // Add API response to log
+                        // Add final log entry
                         addLogEntry({
                                 type: 'api',
-                                action: 'api_response',
-                                requestId,
+                                action: 'batch_api_complete',
+                                requestId: mainRequestId,
                                 district: district,
                                 tehsil: tehsil,
                                 village: village,
-                                status: 'success',
-                                message: `API Response: Success for ${getDisplayName(village)} (${village.value})`,
-                                responseStatus: response.status
+                                status: totalFailedCalls === 10 ? 'error' : 'success',
+                                message: `Batch API calls completed - Success: ${totalSuccessfulCalls}/10, Failed: ${totalFailedCalls}/10`,
+                                totalSuccessful: totalSuccessfulCalls,
+                                totalFailed: totalFailedCalls,
+                                results: allResults
                         });
 
                         if (!isBatchProcessing) {
-                                setFetchStatus('success');
-                                // Show success message for 2 seconds then reset
+                                if (totalSuccessfulCalls > 0) {
+                                        setFetchStatus('success');
+                                } else {
+                                        setFetchStatus('error');
+                                }
+
+                                // Show status message for 3 seconds then reset
                                 setTimeout(() => {
                                         setFetchStatus(null);
-                                }, 2000);
+                                }, 3000);
                         }
 
                         // Remove from active requests
-                        activeRequestsRef.current.delete(requestId);
+                        activeRequestsRef.current.delete(mainRequestId);
 
-                        return true;
+                        // Return true if at least one call was successful
+                        return totalSuccessfulCalls > 0;
+
                 } catch (error) {
-                        console.error('Error fetching property data:', error);
+                        console.error('Error in batch property data fetch:', error);
 
-                        // Update history item status to error
+                        // Update main history item status to error
                         setRequestHistory(prev =>
                                 prev.map(item =>
-                                        item.requestId === requestId
+                                        item.requestId === mainRequestId
                                                 ? {
                                                         ...item,
                                                         status: 'error',
-                                                        message: `Error fetching data for ${getDisplayName(village)} (${village.value}): ${error.message}`
+                                                        message: `Batch fetch failed for ${getDisplayName(village)} (${village.value}): ${error.message}`
                                                 }
                                                 : item
                                 )
                         );
 
-                        // Add API error to log
+                        // Add batch error to log
                         addLogEntry({
                                 type: 'api',
-                                action: 'api_error',
-                                requestId,
+                                action: 'batch_api_error',
+                                requestId: mainRequestId,
                                 district: district,
                                 tehsil: tehsil,
                                 village: village,
                                 status: 'error',
-                                message: `API Error: ${error.message} for ${getDisplayName(village)} (${village.value})`,
+                                message: `Batch API Error: ${error.message}`,
                                 error: error.message
                         });
 
                         if (!isBatchProcessing) {
                                 setFetchStatus('error');
-                                // Show error message for 2 seconds then reset
                                 setTimeout(() => {
                                         setFetchStatus(null);
-                                }, 2000);
+                                }, 3000);
                         }
 
                         // Remove from active requests
-                        activeRequestsRef.current.delete(requestId);
+                        activeRequestsRef.current.delete(mainRequestId);
 
                         return false;
                 }
